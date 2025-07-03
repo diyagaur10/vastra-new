@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  TAILOR
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String // This will be a hash
+  role      UserRole @default(CUSTOMER)
+  location  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tailorProfile TailorProfile?
+  // Add relations to orders, reviews etc. later
+}
+
+model TailorProfile {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String   @unique
+  boutiqueName String
+  speciality   String
+  badges       String[]
+  imageGradient String // from your frontend: "from-pink-200 to-pink-300"
+  reviews      Review[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Float
+  comment   String?
+  createdAt DateTime @default(now())
+
+  // In a real app, you'd link this to a customer and an order
+  tailorProfile   TailorProfile @relation(fields: [tailorProfileId], references: [id])
+  tailorProfileId String
+}
+
+model Testimonial {
+  id       String @id @default(cuid())
+  name     String
+  location String
+  image    String
+  rating   Int
+  text     String
+  outfit   String
+}
+
